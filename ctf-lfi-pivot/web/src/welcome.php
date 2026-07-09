@@ -97,6 +97,7 @@
         <div class="logo">Nova<span>Tech</span> Solutions</div>
         <nav>
             <a href="?page=welcome.php">Inicio</a>
+            <a href="upload.php">Subir Documento</a>
             <a href="#">Servicios</a>
             <a href="#">Soporte</a>
             <a href="#">Contacto</a>
