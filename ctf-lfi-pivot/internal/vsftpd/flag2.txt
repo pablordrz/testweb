@@ -1,1 +1,0 @@
-CTF{vsftpd_backdoor_pivot_complete}
