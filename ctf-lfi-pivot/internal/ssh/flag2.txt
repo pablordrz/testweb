@@ -1,0 +1,1 @@
+CTF{ssh_weak_creds_pivot_complete}

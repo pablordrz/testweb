@@ -1,0 +1,32 @@
+services:
+  # Máquina 1: web PHP vulnerable a LFI -> Log Poisoning -> RCE
+  web:
+    build: ./web
+    container_name: ctf-web
+    ports:
+      - "8080:80"          # única puerta de entrada expuesta al "atacante"
+    networks:
+      - frontend
+      - internal
+    restart: unless-stopped
+
+  # Máquina 2: servidor SSH con credenciales débiles (admin:admin)
+  # SOLO alcanzable desde dentro de "internal", sin publicar puertos al host
+  internal-vuln:
+    build: ./internal/ssh
+    container_name: ctf-internal
+    networks:
+      - internal
+    restart: unless-stopped
+    # IMPORTANTE: no añadir "ports" aquí. Si publicas el 22 al host,
+    # la máquina deja de estar aislada y ya no haría falta pivotar desde
+    # "web" para alcanzarla, lo cual rompe el planteamiento del reto.
+    # Dentro de la red "internal" el puerto sigue expuesto y accesible
+    # para cualquier contenedor conectado a esa red (ctf-web).
+
+networks:
+  frontend:
+    driver: bridge
+  internal:
+    driver: bridge
+    internal: true   # sin salida a Internet / red del host -> solo containers de esta red se ven entre sí
