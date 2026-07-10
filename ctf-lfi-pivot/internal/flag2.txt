@@ -1,1 +1,0 @@
-CTF{sambacry_rce_pivot_complete}
