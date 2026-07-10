@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # Máquina 1: web PHP vulnerable a LFI -> Log Poisoning -> RCE
   web:
@@ -15,7 +13,7 @@ services:
   # Máquina 2: vsftpd 2.3.4 backdoored (CVE-2011-2523)
   # SOLO alcanzable desde dentro de "internal", sin publicar puertos al host
   internal-vuln:
-    build: ./internal/vsftpd-2.3.4-vulnerable
+    build: ./internal/vsftpd
     container_name: ctf-internal
     networks:
       - internal

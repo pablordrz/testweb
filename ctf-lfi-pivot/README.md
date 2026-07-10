@@ -85,38 +85,36 @@ Desde una shell dentro de `ctf-web` (que sí está en ambas redes), habría que:
 
 No incluyo aquí código de explotación (el backdoor en sí, ni un exploit
 listo para copiar/pegar): no es algo que escriba, ni aunque el fin sea un
-laboratorio propio. Lo que sí te recomiendo, y es el estándar en la
-comunidad para montar exactamente este reto, es usar un proyecto ya
-existente y pensado para cursos de ciberseguridad:
+laboratorio propio. El `Dockerfile` en `internal/vsftpd/` construye la
+máquina a partir de un binario ya compilado y de acceso público, alojado en
+un repo hecho explícitamente para pruebas de exploits/scanners:
 
-- **vitalyford/vsftpd-2.3.4-vulnerable**
-  (https://github.com/vitalyford/vsftpd-2.3.4-vulnerable): repo con un
-  `Dockerfile` que compila la versión de vsftpd 2.3.4 con el backdoor
-  histórico (el mismo que documentan HackTricks, Exploit-DB, Rapid7, etc.).
-  Pensado explícitamente para prácticas de pentesting en clase.
+- **Anon-Exploiter/vulnerable-packages**
+  (https://github.com/Anon-Exploiter/vulnerable-packages): incluye el
+  binario de vsftpd 2.3.4 con el backdoor histórico ya compilado (el mismo
+  documentado en HackTricks, Exploit-DB, Rapid7, etc.), evitando depender de
+  compilar desde fuentes o de imágenes de terceros que puedan desaparecer.
 
-### Cómo integrarlo
+  > Nota: la alternativa más conocida, `vitalyford/vsftpd-2.3.4-vulnerable`,
+  > depende de una imagen de Docker Hub (`nksnksnks/vsftpd.2.3.4-vuln-osvdb-73573`)
+  > que ya no existe (fallo reportado desde 2019 sin solución), así que no
+  > la uses como base.
 
-```bash
-cd internal
-git clone https://github.com/vitalyford/vsftpd-2.3.4-vulnerable.git vsftpd-2.3.4-vulnerable
-```
+### Cómo se integra
 
-El `docker-compose.yml` de este proyecto ya referencia esa carpeta como
-`build:` del servicio `internal-vuln`. Ese repo trae su propio
-`docker-compose.yml` pensado para 12 equipos con puertos `20XX`/`62XX`;
-para este reto (una sola instancia, sin puertos publicados al host) basta
-con quedarte con su `Dockerfile` y dejar que nuestro `docker-compose.yml`
-raíz orqueste el build — no hace falta usar el `docker-compose.yml` interno
-del repo clonado.
+Ya está integrado: `docker-compose.yml` construye `internal-vuln` desde
+`./internal/vsftpd`, cuyo `Dockerfile`:
 
-Sustituye el fichero de secreto que trae el repo (`secret.txt`) por tu
-propia flag, manteniendo el mismo nombre y ruta que use su `Dockerfile`
-(revisa el `COPY`/`RUN` correspondiente al clonarlo), o añade una línea
-`COPY flag2.txt /root/flag2.txt` al final de ese `Dockerfile` si prefieres
-mantenerlo separado. Un ejemplo de flag ya preparado con el contenido
-esperado está en `internal/vsftpd/flag2.txt` de este repo — cópialo dentro
-de la carpeta clonada antes de construir la imagen.
+1. Clona el repo anterior en tiempo de build (necesita acceso a GitHub
+   desde el host donde ejecutes `docker compose build`).
+2. Coloca el binario en `/usr/local/sbin/vsftpd` y su configuración en
+   `/etc/vsftpd.conf`.
+3. Copia `flag2.txt` (en la misma carpeta) a `/root/flag2.txt` con permisos
+   `600`.
+4. Arranca vsftpd como root vía `/root/run.sh` al iniciar el contenedor.
+
+Solo necesitas `docker compose up --build -d` desde la raíz del proyecto;
+no hace falta clonar nada a mano.
 
 ### Por qué esto obliga a usar la reverse/bind shell y no solo el RCE plano
 
